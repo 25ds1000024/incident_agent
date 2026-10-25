@@ -1,0 +1,10 @@
+{
+  "name": "incident-agent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ga5-incident-agent/v2 - diagnosis, safe recovery and audit telemetry",
+  "engines": { "node": "22.x" },
+  "scripts": {
+    "test": "node test/run.js"
+  }
+}
