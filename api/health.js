@@ -31,6 +31,7 @@ module.exports = async function handler(req, res) {
       out.modelTest = r.json && r.json.ok === true ? 'ok' : 'unexpected answer';
     } catch (e) {
       out.modelTest = 'failed';
+      out.modelError = String((e && e.message) || 'unknown').slice(0, 80); // short code only, e.g. model_http_404
       out.problems.push('The model call failed. Check that the key is correct and has quota.');
     }
   }
