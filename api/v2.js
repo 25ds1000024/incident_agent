@@ -67,13 +67,14 @@ async function loadRun(runId) {
   return raw ? JSON.parse(raw) : null;
 }
 // Optional debug snapshot (only when DEBUG_KEY is set). Never stores the `sensitive` object.
-async function saveDebug(body, planRes) {
+async function saveDebug(body, planRes, req) {
   const snap = {
     runId: body.runId,
     incident: { incidentId: body.incident.incidentId, title: body.incident.title, service: body.incident.service, severity: body.incident.severity, allowedRootCauses: body.incident.allowedRootCauses, transcript: body.incident.transcript },
     toolCatalog: body.toolCatalog,
     policy: { maximumDiagnostics: body.policy.maximumDiagnostics, effectTools: body.policy.effectTools, approvalRequiredFor: body.policy.approvalRequiredFor },
     myPlan: { diagnosis: planRes.diagnosis, diagnostics: planRes.diagnostics, effect: planRes.effect, model: planRes.meta && planRes.meta.model, fallback: planRes.meta && planRes.meta.fallback },
+    request: { bodyKeys: Object.keys(body), incidentKeys: Object.keys(body.incident), headerNames: Object.keys((req && req.headers) || {}), traceparentHeader: !!(req && req.headers && req.headers.traceparent), tracestateHeader: !!(req && req.headers && req.headers.tracestate) },
     at: new Date().toISOString(),
   };
   await store.set('ga5:dbg:' + body.runId, JSON.stringify(snap));
@@ -106,7 +107,7 @@ async function createIncident(req, res) {
     }
     const planRes = await planner.plan(body, t0);
     if (!planRes) return { status: 422, body: { error: 'cannot_plan' } };
-    if (process.env.DEBUG_KEY) { try { await saveDebug(body, planRes); } catch (_) { /* debug only */ } }
+    if (process.env.DEBUG_KEY) { try { await saveDebug(body, planRes, req); } catch (_) { /* debug only */ } }
     const st = machine.createRun({ body, bodyHash, headers: req.headers || {}, planRes, t0 });
     await saveRun(st); // store state BEFORE responding
     return { status: 200, body: st.firstResponse };
