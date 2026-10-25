@@ -9,6 +9,7 @@ const MAX_BODY = 5 * 1024 * 1024;
 
 function send(res, status, obj) {
   const text = JSON.stringify(obj);
+  console.log(`res ${res.__tag || ''} -> ${status}${obj && obj.error ? ' ' + obj.error : ''}${obj && obj.status ? ' ' + obj.status : ''}${obj && Array.isArray(obj.dispatches) ? ' d=' + obj.dispatches.length : ''}${obj && Array.isArray(obj.approvals) ? ' a=' + obj.approvals.length : ''}`);
   res.statusCode = status;
   res.setHeader('content-type', 'application/json; charset=utf-8');
   res.setHeader('cache-control', 'no-store');
@@ -128,6 +129,7 @@ async function getRun(req, res, runId) {
 module.exports = async function handler(req, res) {
   try {
     const parts = routeParts(req);
+    res.__tag = `${req.method} ${parts.map((x, i) => (i === 1 ? ':runId' : x)).join('/')}`;
     if (parts[0] !== 'incidents') return send(res, 404, { error: 'not_found' });
     if (parts.length === 1) {
       if (req.method !== 'POST') return send(res, 405, { error: 'method_not_allowed' });
