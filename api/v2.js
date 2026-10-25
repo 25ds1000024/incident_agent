@@ -146,6 +146,7 @@ async function getRun(req, res, runId) {
 
 module.exports = async function handler(req, res) {
   try {
+    console.log(`req ${req.method} ${String(req.url).split('?')[0].slice(0, 80)} len=${(req.headers && req.headers['content-length']) || '-'} ua=${String((req.headers && req.headers['user-agent']) || '-').slice(0, 40)}`);
     const parts = routeParts(req);
     res.__tag = `${req.method} ${parts.map((x, i) => (i === 1 ? ':runId' : x)).join('/')}`;
     if (parts[0] !== 'incidents') return send(res, 404, { error: 'not_found' });
